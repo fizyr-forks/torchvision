@@ -1040,7 +1040,6 @@ workflows:
           - nightly_binary_win_wheel_py3.6_cpu
           subfolder: cpu/
       - binary_win_wheel_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
@@ -1100,7 +1099,6 @@ workflows:
           - nightly_binary_win_wheel_py3.7_cpu
           subfolder: cpu/
       - binary_win_wheel_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
@@ -1160,7 +1158,6 @@ workflows:
           - nightly_binary_win_wheel_py3.8_cpu
           subfolder: cpu/
       - binary_win_wheel_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
@@ -1519,7 +1516,6 @@ workflows:
           requires:
           - nightly_binary_win_conda_py3.6_cpu
       - binary_win_conda_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
@@ -1576,7 +1572,6 @@ workflows:
           requires:
           - nightly_binary_win_conda_py3.7_cpu
       - binary_win_conda_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
@@ -1633,7 +1628,6 @@ workflows:
           requires:
           - nightly_binary_win_conda_py3.8_cpu
       - binary_win_conda_release:
-          cu_version: cu101
           filters:
             branches:
               only: nightly
