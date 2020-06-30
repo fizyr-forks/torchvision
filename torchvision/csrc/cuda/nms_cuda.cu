@@ -7,7 +7,7 @@
 #include <c10/hip/HIPGuard.h>
 #endif
 
-#include "cuda_helpers.h"
+#include "cuda/cuda_helpers.h"
 
 #include <iostream>
 #include <vector>
