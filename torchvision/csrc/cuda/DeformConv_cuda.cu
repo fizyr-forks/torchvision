@@ -72,7 +72,7 @@
 #include <c10/cuda/CUDAGuard.h>
 #include <ATen/cuda/CUDAApplyUtils.cuh>
 
-#include "cuda_helpers.h"
+#include "cuda/cuda_helpers.h"
 
 #include <cmath>
 #include <iostream>
