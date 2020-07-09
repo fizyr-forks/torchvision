@@ -176,6 +176,96 @@ def get_extensions():
             )
         )
 
+    # ------------------- Torchvision extra extensions ------------------------
+    vision_include = os.environ.get('TORCHVISION_INCLUDE', None)
+    vision_library = os.environ.get('TORCHVISION_LIBRARY', None)
+    vision_include = (vision_include.split(os.pathsep)
+                      if vision_include is not None else [])
+    vision_library = (vision_library.split(os.pathsep)
+                      if vision_library is not None else [])
+    include_dirs += vision_include
+    library_dirs = vision_library
+
+    # Image reading extension
+    image_macros = []
+    image_include = [extensions_include_dir]
+    image_library = []
+    image_link_flags = []
+
+    # Detect if build is running under conda/conda-build
+    conda = distutils.spawn.find_executable('conda')
+    is_conda = conda is not None
+
+    build_prefix = os.environ.get('BUILD_PREFIX', None)
+    is_conda_build = build_prefix is not None
+    running_under_conda = is_conda or is_conda_build
+
+    # Locating libPNG
+    libpng = distutils.spawn.find_executable('libpng-config')
+    pngfix = distutils.spawn.find_executable('pngfix')
+    png_found = libpng is not None or pngfix is not None
+    image_macros += [('PNG_FOUND', str(int(png_found)))]
+    print('PNG found: {0}'.format(png_found))
+    if png_found:
+        if libpng is not None:
+            # Linux / Mac
+            png_version = subprocess.run([libpng, '--version'],
+                                         stdout=subprocess.PIPE)
+            png_version = png_version.stdout.strip().decode('utf-8')
+            print('libpng version: {0}'.format(png_version))
+            png_version = parse_version(png_version)
+            if png_version >= parse_version("1.6.0"):
+                print('Building torchvision with PNG image support')
+                linux = sys.platform == 'linux'
+                not_debian = False
+                libpng_on_conda = False
+                if linux:
+                    bin_folder = os.path.dirname(sys.executable)
+                    png_bin_folder = os.path.dirname(libpng)
+                    libpng_on_conda = (
+                        running_under_conda and bin_folder == png_bin_folder)
+                    release_info = get_linux_distribution()
+                    not_debian = release_info["NAME"] not in {'Ubuntu', 'Debian'}
+                if not linux or libpng_on_conda or not_debian:
+                    png_lib = subprocess.run([libpng, '--libdir'],
+                                             stdout=subprocess.PIPE)
+                    png_lib = png_lib.stdout.strip().decode('utf-8')
+                    image_library += [png_lib]
+                png_include = subprocess.run([libpng, '--I_opts'],
+                                             stdout=subprocess.PIPE)
+                png_include = png_include.stdout.strip().decode('utf-8')
+                _, png_include = png_include.split('-I')
+                print('libpng include path: {0}'.format(png_include))
+                image_include += [png_include]
+                image_link_flags.append('png')
+            else:
+                print('libpng installed version is less than 1.6.0, '
+                      'disabling PNG support')
+                png_found = False
+        else:
+            # Windows
+            png_lib = os.path.join(
+                os.path.dirname(os.path.dirname(pngfix)), 'lib')
+            png_include = os.path.join(os.path.dirname(
+                os.path.dirname(pngfix)), 'include', 'libpng16')
+            image_library += [png_lib]
+            image_include += [png_include]
+            image_link_flags.append('libpng')
+
+    image_path = os.path.join(extensions_src_dir, 'cpu', 'image')
+    image_src = glob.glob(os.path.join(image_path, '*.cpp'))
+
+    if png_found:
+        ext_modules.append(extension(
+            'torchvision.image',
+            image_src,
+            include_dirs=image_include + include_dirs + [image_path],
+            library_dirs=image_library + library_dirs,
+            define_macros=image_macros,
+            libraries=image_link_flags,
+            extra_compile_args=extra_compile_args
+        ))
+
     ffmpeg_exe = distutils.spawn.find_executable('ffmpeg')
     has_ffmpeg = ffmpeg_exe is not None
 
