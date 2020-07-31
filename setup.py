@@ -152,7 +152,7 @@ def get_linux_distribution():
             # Just major version shown, replace it with the full version
             release_data["VERSION"] = " ".join(
                 [debian_version] + version_split[1:])
-    print("{} {}".format(release_data["NAME"], release_data["VERSION"]))
+    #print("{} {}".format(release_data["NAME"], release_data["VERSION"]))
     return release_data
 
 
