@@ -75,6 +75,7 @@ class FrozenBatchNorm2d(torch.nn.Module):
         missing_keys: List[str],
         unexpected_keys: List[str],
         error_msgs: List[str],
+        tensor_check_fn,
     ):
         num_batches_tracked_key = prefix + 'num_batches_tracked'
         if num_batches_tracked_key in state_dict:
@@ -82,7 +83,7 @@ class FrozenBatchNorm2d(torch.nn.Module):
 
         super(FrozenBatchNorm2d, self)._load_from_state_dict(
             state_dict, prefix, local_metadata, strict,
-            missing_keys, unexpected_keys, error_msgs)
+            missing_keys, unexpected_keys, error_msgs, tensor_check_fn)
 
     def forward(self, x: Tensor) -> Tensor:
         # move reshapes to the beginning
